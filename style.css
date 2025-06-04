@@ -1,0 +1,326 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400&display=swap');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+	font-family: 'Montserrat', sans-serif;
+}
+
+body {
+    /* display: grid; */ /* Removed */
+    /* place-content: center; */ /* Removed */
+    height: 100vh;
+    width: 100vw;
+	overflow: hidden;
+	background: #f2e7d1;
+}
+
+#flipbook-wrapper {
+    width: 80vw;
+    height: 80vh;
+    position: fixed;
+    top: 50%;
+    left: -10vw; 
+    opacity: 0; 
+    transform: translateY(30px) translateY(-50%); /* Start lower for load, but maintain Y-center for top:50% */
+    transition: top 0.6s ease-out, 
+                left 0.6s ease-out, 
+                transform 0.6s ease-out, /* Synchronized with top/left */
+                opacity 0.8s ease-out;   /* Opacity primarily for entrance */
+    z-index: 1000; 
+}
+
+#flipbook-wrapper.loaded {
+    opacity: 1;
+    transform: translateY(-50%); /* Resting Y-centered position */
+}
+
+#flipbook-wrapper.is-open {
+    top: 10vh; 
+    left: 10vw; 
+    transform: none; /* No transform needed when positioned with top/left */
+    z-index: 50; 
+}
+
+.flipbook {
+    width: 100%; /* Fill the wrapper */
+    height: 100%; /* Fill the wrapper */
+    /* position, top, left, transform, transition, and initial z-index removed */
+    /* turn.js will likely handle its own positioning within this now relative container */
+}
+
+.flipbook .hard {
+    background: #0e3333 !important;
+    color: #fff;
+    font-weight: bold;
+    border: none; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.flipbook .hard small{
+	font-style: italic;
+	font-weight: lighter;
+	opacity: 0.7;
+	font-size: 14px;
+    margin: 20px auto;
+}
+
+.flipbook .page {
+    background: white;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+    gap: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.11);
+}
+
+.page img{
+	width: 70%;
+	object-fit: cover;
+	margin: auto;
+}
+
+.flipbook .page small{
+	font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 3rem;
+    color: #0e3333;
+    cursor: pointer;
+    user-select: none;
+    padding: 10px;
+    z-index: 10;
+    opacity: 0; /* Initially hidden */
+    pointer-events: none; /* Initially not interactive */
+    transition: opacity 0.5s ease-in-out 0.5s; /* Delayed fade-in */
+}
+
+.arrow.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#prev-arrow {
+    left: 20px;
+}
+
+#next-arrow {
+    right: 20px;
+}
+
+.filters {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5; /* Initially below the closed book */
+    background-color: rgba(242, 231, 209, 0.8);
+    padding: 10px;
+    border-radius: 5px;
+    opacity: 0; /* Initially hidden */
+    pointer-events: none; /* Initially not interactive */
+    transition: opacity 0.5s ease-in-out 0.5s; /* Delayed fade-in, same as arrows */
+}
+
+.filters.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 100; /* Above the opened book */
+}
+
+.filters select {
+    margin: 0 5px;
+    padding: 5px;
+    border-radius: 3px;
+    border: 1px solid #0e3333;
+    background-color: white;
+    color: #0e3333;
+    font-family: "Poppins", sans-serif;
+}
+
+.page-content p {
+    margin: 5px 0;
+    text-align: center;
+}
+
+.cover-logo {
+    display: block;
+    width: 50%; /* Adjust as needed */
+    max-width: 200px; /* Prevent it from becoming too large */
+    margin: 20px auto; /* Center it and add some space */
+}
+
+.yearbook-title {
+    text-transform: uppercase;
+    letter-spacing: 0.1em; /* 100 tracking */
+    font-weight: 400; /* Explicitly regular, though inherited */
+}
+
+/* Styles for the front cover layout */
+.front-cover {
+    position: relative;
+}
+
+.front-cover .cover-logo {
+    position: absolute;
+    top: 35%; /* Vertical center of logo at 35% from the top */
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center element precisely */
+    width: 60%;  /* Changed from 40% */
+    max-width: 300px; /* Increased max-width to accommodate larger percentage */
+    margin: 0;
+    display: block; /* Though absolute positioning often makes this implicit */
+}
+
+.front-cover .yearbook-title {
+    position: absolute;
+    top: 85%; /* Changed from 75% to center it in the lower 30% */
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center element precisely */
+    width: 90%; /* Allow text to wrap and be centered */
+    /* text-align is already center from .flipbook .hard or can be re-stated if necessary */
+}
+
+.image-container {
+    position: relative;
+    width: 70%; /* Define a specific width */
+    height: 35vh; /* Define a specific height; adjust as needed */
+    margin-bottom: 10px; 
+    overflow: hidden; 
+}
+
+.image-container img {
+    display: block; 
+    width: 100%; /* Fill container width */
+    height: 100%; /* Fill container height */
+    object-fit: cover; /* Cover the container, may crop image */
+}
+
+.expand-icon {
+    position: absolute;
+    bottom: 5px !important;
+    right: 5px !important;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 5px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    font-size: 16px;
+    line-height: 1;
+    z-index: 2147483647 !important;
+}
+
+.image-container:hover .expand-icon {
+    opacity: 1;
+}
+
+/* Fullscreen Viewer Styles */
+#fullscreen-viewer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 2000; /* Ensure it's on top of everything */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#fullscreen-image {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+    object-fit: contain; /* Scales while maintaining aspect ratio */
+}
+
+#close-viewer {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+/* Styles for mobile view */
+.mobile-view #flipbook-wrapper {
+    width: 90vw; /* Make the book wider on mobile */
+    height: 90vh; /* Make the book taller on mobile */
+    top: 5vh;    /* Center the 90vh wrapper vertically */
+    left: 5vw;   /* Center the 90vw wrapper horizontally */
+}
+
+/* .loaded state on mobile inherits from .mobile-view #flipbook-wrapper */
+
+.mobile-view #flipbook-wrapper.is-open {
+    /* width, height, top, left are inherited from .mobile-view #flipbook-wrapper */
+    /* No changes needed here if they are the same for open state */
+}
+
+.mobile-view .arrow {
+    display: none; /* Hide arrows on mobile */
+}
+
+.mobile-view #prev-arrow {
+    /* left: 5px;      No longer needed as arrows are hidden */
+    /* font-size: 2.5rem; No longer needed */
+}
+
+.mobile-view #next-arrow {
+    /* right: 5px;     No longer needed */
+    /* font-size: 2.5rem; No longer needed */
+}
+
+.mobile-view .filters {
+    top: 10px; /* A bit lower from the top edge */
+    padding: 8px;
+    /* width: 90%; */ /* Optional: if you want filters to span more on mobile */
+}
+
+.mobile-view .filters select {
+    padding: 4px;
+    font-size: 0.9em;
+    margin: 0 3px;
+}
+
+/* Ensure page content itself adapts if necessary, though flexbox should handle it */
+.mobile-view .flipbook .page {
+    /* Any specific mobile page adjustments if needed */
+}
+
+.mobile-view .image-container {
+    width: 85%; /* Allow image container to be a bit wider on single page mobile */
+    height: 40vh; /* Adjust height if needed for mobile aspect ratio */
+}
+
+.mobile-view .front-cover .cover-logo {
+    width: 70%;
+    max-width: 280px;
+}
+
+.mobile-view .front-cover .yearbook-title {
+    top: 88%; /* Adjust title position slightly on mobile if logo is larger */
+    font-size: 0.9em; /* Slightly smaller title for mobile cover */
+}
+

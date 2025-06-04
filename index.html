@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <title>Jivamukti Yoga Yearbook</title>
+</head>
+
+<body>
+  <div id="prev-arrow" class="arrow">&lt;</div>
+  <div class="filters">
+    <select id="year-filter">
+      <option value="">All Years</option>
+      <option value="1984">1984</option>
+      <option value="2001">2001</option>
+      <option value="2023">2023</option>
+    </select>
+  </div>
+  <div id="flipbook-wrapper">
+    <div class="flipbook">
+      <div class="hard front-cover">
+        <img src="Images/Identity/logotype-jy-light.svg" alt="Jivamukti Logo" class="cover-logo" />
+        <span class="yearbook-title">Jivamukti Yoga Yearbook</span>
+      </div>
+      <div class="hard"></div>
+      <div>
+        <p>Welcome to our humble time machine</p>
+      </div>
+      <div class="page-content" data-year="1984">
+        <div class="image-container">
+          <img src="Images/image-1.png" alt="" />
+          <span class="expand-icon">&#x26F6;</span>
+        </div>
+        <p>Year: 1984</p>
+      </div>
+      <div class="page-content" data-year="1984">
+        <p>Year: 1984</p>
+        <p>A wonderful year of beginnings.</p>
+        <p>More details about 1984 can go here.</p>
+      </div>
+      <div class="page-content" data-year="2001">
+        <div class="image-container">
+          <img src="Images/image-2.png" alt="" />
+          <span class="expand-icon">&#x26F6;</span>
+        </div>
+        <p>Year: 2001</p>
+      </div>
+      <div class="page-content" data-year="2001">
+        <p>Year: 2001</p>
+        <p>Embracing the new millennium.</p>
+        <p>Further reflections on 2001.</p>
+      </div>
+      <div class="page-content" data-year="2023">
+        <div class="image-container">
+          <img src="Images/image-3.png" alt="" />
+          <span class="expand-icon">&#x26F6;</span>
+        </div>
+        <p>Year: 2023</p>
+      </div>
+      <div class="page-content" data-year="2023">
+        <p>Year: 2023</p>
+        <p>A year of deep practice.</p>
+        <p>Insights from our 2023 graduates.</p>
+      </div>
+      <div class="page-content" data-year="1984">
+        <div class="image-container">
+          <img src="Images/image-4.png" alt="" />
+          <span class="expand-icon">&#x26F6;</span>
+        </div>
+        <p>Year: 1984 (Cont.)</p>
+      </div>
+      <div class="page-content" data-year="1984">
+        <p>Year: 1984 (Cont.)</p>
+        <p>Continuing the journey.</p>
+        <p>Additional memories from 1984.</p>
+      </div>
+      <div class="page-content" data-year="2001">
+        <div class="image-container">
+          <img src="Images/image-1.png" alt="" />
+          <span class="expand-icon">&#x26F6;</span>
+        </div>
+        <p>Year: 2001 (Cont.)</p>
+      </div>
+      <div class="page-content" data-year="2001">
+        <p>Year: 2001 (Cont.)</p>
+        <p>Exploring new asanas.</p>
+        <p>Student stories from 2001.</p>
+      </div>
+      <div class="page-content" data-year="2023">
+        <div class="image-container">
+          <img src="Images/image-2.png" alt="" />
+          <span class="expand-icon">&#x26F6;</span>
+        </div>
+        <p>Year: 2023 (Cont.)</p>
+      </div>
+      <div class="page-content" data-year="2023">
+        <p>Year: 2023 (Cont.)</p>
+        <p>Finding peace and stillness.</p>
+        <p>Reflections on the 2023 curriculum.</p>
+      </div>
+      <div class="page-content" data-year="1984">
+        <div class="image-container">
+          <img src="Images/image-3.png" alt="" />
+          <span class="expand-icon">&#x26F6;</span>
+        </div>
+        <p>Year: 1984 (Alumni)</p>
+      </div>
+      <div class="page-content" data-year="1984">
+        <p>Year: 1984 (Alumni)</p>
+        <p>A different perspective this year.</p>
+        <p>Alumni notes from 1984.</p>
+      </div>
+      <div class="hard"></div>
+      <div class="hard">
+        <span class="yearbook-title">With Gratitude</span>
+      </div>
+    </div>
+  </div>
+  <div id="next-arrow" class="arrow">&gt;</div>
+
+  <!-- Fullscreen Image Viewer Overlay -->
+  <div id="fullscreen-viewer" style="display: none;">
+    <span id="close-viewer">&times;</span>
+    <img id="fullscreen-image" src="" alt="Fullscreen Image" />
+    <!-- Optional: Add next/prev buttons here -->
+  </div>
+
+  <script src="jquery.js"></script>
+  <script src="turn.js"></script>
+  <script>
+    var flipbookWrapper = $("#flipbook-wrapper");
+    var flipbook = $(".flipbook");
+    var arrows = $(".arrow");
+    var filtersUI = $(".filters");
+    var yearbookOpened = false;
+    var lastScrollTime = 0; // For scroll throttling
+    var scrollThrottle = 700; 
+    var currentIsMobile = window.innerWidth < 768; // Initial check
+
+    // Variables for touch swipe
+    var touchStartY = 0;
+    var touchEndY = 0;
+    var minSwipeDistance = 30; // Minimum pixels for a swipe to be registered
+
+    // Simple throttle function
+    function throttle(func, limit) {
+        let lastFunc;
+        let lastRan;
+        return function() {
+            const context = this;
+            const args = arguments;
+            if (!lastRan) {
+                func.apply(context, args);
+                lastRan = Date.now();
+            } else {
+                clearTimeout(lastFunc);
+                lastFunc = setTimeout(function() {
+                    if ((Date.now() - lastRan) >= limit) {
+                        func.apply(context, args);
+                        lastRan = Date.now();
+                    }
+                }, limit - (Date.now() - lastRan));
+            }
+        }
+    }
+
+    // Function to setup or reconfigure turn.js
+    function setupTurnJs() {
+        var displayMode = currentIsMobile ? 'single' : 'double';
+        var currentPage = flipbook.turn('is') ? flipbook.turn('page') : 1; // Get current page if initialized
+
+        if (flipbook.turn('is')) {
+            // If turn.js is already initialized, we might need to destroy and reinitialize 
+            // or update options if the library supports it.
+            // For display mode changes, often a destroy/re-init or specific API is needed.
+            // Let's try updating display and size.
+            flipbook.turn('display', displayMode);
+            flipbook.turn('size', flipbookWrapper.width(), flipbookWrapper.height());
+            flipbook.turn('page', currentPage); // Re-apply current page
+        } else {
+            var turnOptions = {
+                width: flipbookWrapper.width(), // Use wrapper's width
+                height: flipbookWrapper.height(), // Use wrapper's height
+                display: displayMode,
+                when: {
+                    turned: function(event, page, view) {
+                        flipbook.children('div').removeClass('filtered-out').show();
+                    }
+                }
+            };
+            flipbook.turn(turnOptions);
+        }
+    }
+
+    // Handle window resize
+    function handleResize() {
+        var newIsMobile = window.innerWidth < 768;
+        
+        // Update wrapper and flipbook dimensions based on CSS (vw/vh)
+        // turn.js needs explicit new dimensions if its container changes.
+        var newWrapperWidth = flipbookWrapper.width();
+        var newWrapperHeight = flipbookWrapper.height();
+
+        if (newIsMobile !== currentIsMobile) {
+            currentIsMobile = newIsMobile;
+            if (currentIsMobile) {
+                $('body').addClass('mobile-view');
+            } else {
+                $('body').removeClass('mobile-view');
+            }
+            // After class change, wrapper dimensions might change due to CSS, re-fetch them.
+            newWrapperWidth = flipbookWrapper.width();
+            newWrapperHeight = flipbookWrapper.height();
+            
+            var displayMode = currentIsMobile ? 'single' : 'double';
+            var currentPage = flipbook.turn('page');
+            
+            flipbook.turn('display', displayMode);
+            flipbook.turn('size', newWrapperWidth, newWrapperHeight); 
+            flipbook.turn('page', currentPage); // Ensure we stay on the same page
+        } else {
+            // If display mode hasn't changed, just update size
+            if (flipbook.turn('is')) {
+                flipbook.turn('size', newWrapperWidth, newWrapperHeight);
+            }
+        }
+    }
+
+    var throttledHandleResize = throttle(handleResize, 250); // Throttle resize handling to 250ms
+
+    // Centralized function to handle scroll/swipe actions
+    function handleInteraction(direction) {
+        var currentTime = new Date().getTime();
+
+        if (!yearbookOpened) {
+            if (direction === 'down') { // Only open on SCROLL DOWN / SWIPE DOWN if closed
+                flipbookWrapper.addClass('is-open');
+                arrows.addClass('is-visible'); // Arrows will be hidden by CSS on mobile anyway
+                filtersUI.addClass('is-visible');
+                yearbookOpened = true;
+                lastScrollTime = currentTime; 
+            }
+            return; 
+        }
+
+        // If book is already open:
+        if (currentTime - lastScrollTime < scrollThrottle) {
+            return; // Throttled
+        }
+        lastScrollTime = currentTime;
+
+        var currentPage = flipbook.turn('page');
+        if (direction === 'up' && currentPage === 1) {
+            console.log("Attempting to close via interaction. Current turn.js page: ", currentPage);
+            flipbookWrapper.removeClass('is-open');
+            arrows.removeClass('is-visible');
+            filtersUI.removeClass('is-visible');
+            yearbookOpened = false;
+            return; // Action taken, no further page turn
+        }
+
+        if (direction === 'down') {
+            flipbook.turn('next');
+        } else if (direction === 'up') {
+            flipbook.turn('previous');
+        }
+    }
+
+    // Scroll navigation (Desktop)
+    flipbookWrapper.on('wheel', function(e) {
+        e.preventDefault(); // Prevent default page scroll when interacting with the flipbook
+        var direction = e.originalEvent.deltaY > 0 ? 'down' : 'up';
+        handleInteraction(direction);
+    });
+
+    // Touch navigation (Mobile)
+    flipbookWrapper.on('touchstart', function(e) {
+        touchStartY = e.originalEvent.touches[0].clientY;
+        touchEndY = touchStartY; // Initialize touchEndY
+    });
+
+    flipbookWrapper.on('touchmove', function(e) {
+        touchEndY = e.originalEvent.touches[0].clientY;
+        // Prevent default scrolling if the book is open and user is likely swiping on it
+        if (yearbookOpened) {
+            e.preventDefault();
+        }
+    });
+
+    flipbookWrapper.on('touchend', function(e) {
+        var swipeDistance = touchStartY - touchEndY;
+
+        if (Math.abs(swipeDistance) > minSwipeDistance) {
+            // Invert the direction for touch to match user expectation
+            // swipeDistance > 0 means finger moved UP the screen
+            // swipeDistance < 0 means finger moved DOWN the screen
+            var direction = swipeDistance > 0 ? 'down' : 'up'; // If finger UP, treat as 'down' action (next/open)
+            handleInteraction(direction);
+        }
+        // Reset touch coordinates
+        touchStartY = 0;
+        touchEndY = 0;
+    });
+
+    // Entrance animation on page load & initial setup
+    $(document).ready(function() {
+        if (currentIsMobile) {
+            $('body').addClass('mobile-view');
+        }
+        // Initial setup of turn.js
+        // We need to ensure the wrapper has its dimensions set by CSS before calling this
+        setTimeout(function() { // Allow CSS to apply from .mobile-view class
+            setupTurnJs(); 
+            $('#flipbook-wrapper').addClass('loaded');
+        }, 100); 
+
+        // Attach resize listener
+        $(window).on('resize', throttledHandleResize);
+    });
+
+    flipbookWrapper.on('click', function() {
+        if (!yearbookOpened) {
+            flipbookWrapper.addClass('is-open');
+            arrows.addClass('is-visible');
+            filtersUI.addClass('is-visible');
+            yearbookOpened = true;
+        }
+    });
+
+    $('#prev-arrow').on('click', function() {
+      flipbook.turn('previous');
+    });
+
+    $('#next-arrow').on('click', function() {
+      flipbook.turn('next');
+    });
+
+    function applyFilters() {
+      var year = $('#year-filter').val();
+      console.log("Filters - Year: [", year, "]");
+
+      if (year === "") { // If "All Years" is selected
+        console.log("All Years selected. Turning to page 1.");
+        flipbook.turn("page", 1); // Go to the very first page (cover)
+        return; // Stop further processing
+      }
+
+      var firstMatchFound = false;
+      var pageToTurnTo = -1;
+
+      var allChildDivs = flipbook.children('div');
+      console.log("Total direct child divs found in flipbook: ", allChildDivs.length);
+
+      if (allChildDivs.length === 0) {
+          console.error("No child divs found in flipbook. Cannot apply filters.");
+          alert("Error: Could not find any pages in the flipbook.");
+          return;
+      }
+
+      allChildDivs.each(function(domIndex) {
+        var $currentWrapperDiv = $(this);
+        console.log("Inspecting direct child div - DOM Index: ", domIndex, "; Classes: '", $currentWrapperDiv.attr('class'), "'");
+
+        var $contentDiv = $currentWrapperDiv.find('.page-content');
+
+        if ($contentDiv.length === 0) {
+          console.log("  DOM Index: ", domIndex, " - No '.page-content' div found inside this wrapper. Skipping.");
+          return;
+        }
+
+        var pageYear = $contentDiv.data('year') ? $contentDiv.data('year').toString() : '';
+        console.log("  Found '.page-content' inside - DOM Index: ", domIndex, "; Data Year: '", pageYear, "'");
+
+        var yearMatch = !year || pageYear === year;
+        console.log("    DOM Index: ", domIndex, "; Filter Year: '", year, "'; Page Year: '", pageYear, "'; Year Match: ", yearMatch);
+
+        if (yearMatch) {
+           if (!firstMatchFound) {
+             pageToTurnTo = domIndex + 1;
+             firstMatchFound = true;
+             console.log("First match found! DOM index: ", domIndex, ". Will turn to turn.js page: ", pageToTurnTo);
+             return false;
+           }
+        }
+      });
+
+      if (firstMatchFound) {
+          console.log("Turning to page: ", pageToTurnTo);
+          flipbook.turn("page", pageToTurnTo);
+      } else {
+          console.log("No pages match filter criteria after checking all 'page-content' divs.");
+          alert("No pages match your filter criteria.");
+      }
+    }
+
+    $('#year-filter').on('change', applyFilters);
+
+    // Fullscreen image viewer logic
+    flipbook.on('click', '.expand-icon', function(e) {
+      e.stopPropagation(); // Prevent triggering flipbookWrapper click or other turn.js events
+      var imageUrl = $(this).siblings('img').attr('src');
+      if (imageUrl) {
+        $('#fullscreen-image').attr('src', imageUrl);
+        $('#fullscreen-viewer').fadeIn(200);
+      } else {
+        console.error('Could not find image source for expand icon:', this);
+      }
+    });
+
+    $('#close-viewer').on('click', function() {
+      $('#fullscreen-viewer').fadeOut(200);
+    });
+
+    // Optional: Close viewer on escape key press
+    $(document).on('keydown', function(e) {
+        if (e.key === "Escape" && $('#fullscreen-viewer').is(':visible')) {
+            $('#fullscreen-viewer').fadeOut(200);
+        }
+    });
+  </script>
+</body>
+
+</html>
